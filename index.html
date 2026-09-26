@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATS CV Builder: free, private, no sign-up</title>
+<meta name="description" content="Build an ATS-friendly CV in your browser. Live A4 preview, PDF export, no sign-up, and your data never leaves your device.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+<style>
+:root{--bg:#E9EDF0;--panel:#FFFFFF;--ink:#1E2A33;--muted:#5B6B77;--line:#CFD8DE;--accent:#0F5E6B;--warn:#B4532A;--soft:#F4F7F8}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:14px}
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar h1{font-size:16px;margin:0 12px 0 0;font-weight:600}
+.status{color:var(--muted);font-size:12px;margin-right:auto}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:6px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--muted)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body{display:flex;flex-direction:column;height:100vh}
+.layout{display:grid;grid-template-columns:minmax(360px,520px) 1fr;flex:1;min-height:0}
+.editor{overflow:auto;padding:16px;border-right:1px solid var(--line)}
+.previewPane{overflow:auto;padding:24px;background:#D9E0E4}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+.secHead{display:flex;align-items:center;gap:6px;padding-right:10px}
+.secToggle{flex:1;display:flex;align-items:center;gap:8px;border:0;background:none;font-weight:600;text-align:left;padding:11px 12px}
+.chev{display:inline-block;transition:transform .15s}
+.sec.open .chev{transform:rotate(90deg)}
+.sec .body{display:none;padding:4px 12px 12px}
+.sec.open .body{display:block}
+.tools{display:flex;gap:6px;align-items:center}
+.tools label{font-size:12px;color:var(--muted);display:flex;gap:4px;align-items:center}
+.small{padding:3px 8px;font-size:12px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;min-width:0}
+.field>span{font-size:12px;color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=text],textarea,select{font:inherit;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+textarea{resize:vertical;min-height:70px;line-height:1.45}
+.missing{border-color:var(--warn)!important;background:#FBF3EF!important}
+.item{border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:10px;background:var(--soft)}
+.itemHead{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.itemHead strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.hint{font-size:12px;color:var(--muted);margin:0 0 8px}
+.tips{margin:0;padding-left:18px;color:var(--ink);font-size:13px;line-height:1.5}
+.tips li{margin-bottom:6px}
+.credit{font-size:12px;color:var(--muted);width:100%;display:flex;gap:12px;flex-wrap:wrap}
+.credit a{color:var(--accent)}
+.style{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.pageInfo{font-size:12px;color:var(--muted);text-align:center;margin:0 auto 12px;max-width:640px}
+#frame{margin:0 auto;overflow:hidden}
+.scaler{transform-origin:top left;width:210mm}
+.page{width:210mm;min-height:297mm;background:#fff;padding:12mm 14mm;color:#111;box-shadow:0 2px 10px rgba(30,42,51,.18);position:relative}
+.guide{position:absolute;left:0;right:0;border-top:1px dashed #C77;pointer-events:none}
+.guide span{position:absolute;right:4mm;top:-15px;font:10px "Segoe UI",sans-serif;color:#C77}
+.cv{font-size:var(--fs,10.5pt);line-height:1.32}
+.cv h2{font-size:1.9em;margin:0;font-weight:700;text-align:center;line-height:1.15}
+.cv .tagline{text-align:center;margin:3px 0 4px;font-size:1.02em}
+.cv .contact{text-align:center;font-size:.95em;color:#333}
+.cv .contact span+span:before{content:"|";margin:0 6px;color:#999}
+.cv h3{font-size:1.1em;color:var(--cv-accent,#0F5E6B);border-bottom:1px solid var(--cv-accent,#0F5E6B);margin:10px 0 5px;padding-bottom:2px;font-weight:700;break-after:avoid}
+.cv p{margin:0 0 4px}
+.cv .ent{margin-bottom:7px}
+.cv .entTop,.cv .entSub{display:flex;justify-content:space-between;gap:10px;break-after:avoid}
+.cv .entTop{font-weight:700}
+.cv .entSub{font-style:italic}
+.cv .intro{margin:2px 0 0}
+.cv ul{margin:3px 0 0;padding-left:16px}
+.cv li{margin:1px 0;break-inside:avoid}
+.cv .skillRow{margin:1px 0}
+.cv .proj{margin-bottom:3px}
+.cv .ph{color:#B8C2C9}
+@media (max-width:900px){body{display:block;height:auto}.layout{grid-template-columns:1fr;height:auto}.editor{border-right:0}.previewPane{overflow:visible}}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+@media print{
+@page{size:A4;margin:12mm 14mm}
+body{background:#fff;display:block;height:auto}
+.bar,.editor,.pageInfo,.guide,.cv .ph{display:none!important}
+.layout{display:block;height:auto}
+.previewPane{padding:0;overflow:visible;background:#fff}
+#frame{width:auto!important;height:auto!important;overflow:visible}
+.scaler{transform:none!important;width:auto}
+.page{width:auto;min-height:0;padding:0;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+<h1>ATS CV builder</h1>
+<span class="status" id="status">Private by design: your CV saves only in this browser. Nothing is uploaded.</span>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<button id="openBtn">Open saved CV (.json)</button>
+<button id="saveBtn">Save data (.json)</button>
+<button id="pdfBtn" class="primary">Download PDF + data</button>
+<button id="blankBtn">Start blank</button>
+<button id="resetBtn">Load example</button>
+<div class="credit"><span>Free and open source.</span><a href="https://github.com/defihumair/ats-cv-builder" target="_blank" rel="noopener">Source on GitHub</a><span>Made by <a href="https://www.linkedin.com/in/biwithhumair" target="_blank" rel="noopener">Muhammad Humair Qureshi</a></span></div>
+</header>
+<main class="layout">
+<section class="editor" id="editor" aria-label="Edit CV"></section>
+<section class="previewPane" id="pane" aria-label="CV preview">
+<p class="pageInfo" id="pageInfo"></p>
+<div id="frame"><div class="scaler" id="scaler"><div class="page" id="page"><div class="cv" id="cv"></div></div></div></div>
+</section>
+</main>
+<script>
+const STORE="atscvbuilder.v1";
+const FONTS={calibri:'Calibri, Carlito, "Segoe UI", Arial, sans-serif',arial:'Arial, Helvetica, sans-serif',cambria:'Cambria, Caladea, Georgia, serif',georgia:'Georgia, "Times New Roman", serif'};
+const FONT_NAMES={calibri:"Calibri",arial:"Arial",cambria:"Cambria",georgia:"Georgia"};
+const DEFAULTS={
+personal:{name:"Alex Morgan",title:"Data Analyst | Power BI · SQL · Python · Excel",email:"alex.morgan@example.com",phone:"+44 20 7946 0000",location:"London, UK",linkedin:"linkedin.com/in/alex-morgan-example",website:"github.com/alex-morgan-example"},
+summary:"Data analyst with 4 years of experience turning operational and sales data into decisions. Built self-service Power BI reporting for 200+ users, automated weekly reporting with Python, and cut month-end reporting time by 60%. Comfortable owning the full cycle from messy source data to a model leadership trusts.",
+experience:[
+{company:"Northwind Retail Group",role:"Senior Data Analyst",start:"Mar 2023",end:"Present",location:"London",intro:"",bullets:[
+"Built a **Power BI sales and margin model** covering 120 stores, giving regional managers daily visibility of margin by product and store.",
+"Automated weekly trading reports with **Python (pandas)** and scheduled refresh, saving the team 12 hours per week.",
+"Designed a star-schema model with conformed date, store and product dimensions, replacing 15 disconnected Excel reports.",
+"Identified a pricing error on 300 SKUs through variance analysis, recovering an estimated £180K in annual margin."]},
+{company:"Contoso Logistics",role:"Data Analyst",start:"Jun 2021",end:"Feb 2023",location:"Manchester",intro:"",bullets:[
+"Delivered warehouse KPI dashboards (throughput, dock time, utilisation) used in daily operations meetings.",
+"Wrote **SQL** queries and views on a 50M-row shipment database to standardise KPI definitions across 4 sites.",
+"Reduced month-end reporting time by 60% by replacing manual Excel consolidation with Power Query."]}
+],
+skills:[
+{category:"BI & visualisation",items:"Power BI, DAX, Power Query, Data Modeling, Excel (advanced)"},
+{category:"Data & automation",items:"SQL, Python (pandas), Power Automate, ETL"},
+{category:"Analytics",items:"KPI design, Variance analysis, Forecasting, A/B testing"}
+],
+education:[
+{school:"University of Manchester",degree:"BSc, Economics",detail:"First Class Honours",start:"Sep 2017",end:"Jun 2021"}
+],
+projects:[
+{name:"Retail demand forecast",detail:"Built a weekly demand forecast in Python for 40 product lines, improving forecast accuracy by 18% against the previous method."}
+],
+certifications:[
+{name:"Microsoft Certified: Power BI Data Analyst Associate",issuer:"Microsoft",year:"2024"},
+{name:"Google Data Analytics Certificate",issuer:"Coursera",year:"2021"}
+],
+languages:[{name:"English",level:"Native"},{name:"Spanish",level:"Professional"}],
+show:{summary:true,experience:true,skills:true,education:true,projects:true,certifications:true,languages:true},
+order:["summary","experience","skills","education","projects","certifications","languages"],
+style:{accent:"#0F5E6B",size:10.5,font:"calibri"}
+};
+const BLANK={
+personal:{name:"",title:"",email:"",phone:"",location:"",linkedin:"",website:""},
+summary:"",
+experience:[{company:"",role:"",start:"",end:"",location:"",intro:"",bullets:[]}],
+skills:[{category:"",items:""}],
+education:[{school:"",degree:"",detail:"",start:"",end:""}],
+projects:[],
+certifications:[],
+languages:[],
+show:{summary:true,experience:true,skills:true,education:true,projects:true,certifications:true,languages:true},
+order:["summary","experience","skills","education","projects","certifications","languages"],
+style:{accent:"#0F5E6B",size:10.5,font:"calibri"}
+};
+const TIPS=[
+"Keep one column. ATS software reads left to right, top to bottom; tables, text boxes and sidebars often get scrambled.",
+"Use standard section names (Work experience, Education, Skills) so the ATS knows where each part belongs.",
+"Start each bullet with an action verb and end with a result, ideally a number: time saved, cost cut, volume handled.",
+"Mirror the exact keywords from the job description, such as tool names, in your skills and bullets.",
+"Export with Download PDF + data. The PDF keeps real, selectable text, which is what an ATS needs to read it."
+];
+const SECTIONS={
+summary:{title:"Professional summary"},
+experience:{title:"Work experience",one:"role",fields:[["company","Company","text",true],["role","Job title","text",true],["start","Start","half"],["end","End","half"],["location","Location","text"],["intro","Company intro (optional)","area"],["bullets","Achievements, one per line. Wrap words in **double stars** for bold.","bullets"]],blank:{company:"",role:"",start:"",end:"",location:"",intro:"",bullets:[]},label:i=>[i.role,i.company].filter(Boolean).join(", ")||"New role"},
+skills:{title:"Skills",one:"skill group",fields:[["category","Category","text",true],["items","Skills, comma separated","area"]],blank:{category:"",items:""},label:i=>i.category||"New skill group"},
+education:{title:"Education",one:"education",fields:[["school","Institution","text",true],["degree","Degree","text"],["detail","Details (CGPA, focus)","text"],["start","Start","half"],["end","End","half"]],blank:{school:"",degree:"",detail:"",start:"",end:""},label:i=>i.school||"New education"},
+projects:{title:"Projects",one:"project",fields:[["name","Project name","text",true],["detail","Description","area"]],blank:{name:"",detail:""},label:i=>i.name||"New project"},
+certifications:{title:"Certifications",one:"certificate",fields:[["name","Certificate","text",true],["issuer","Issuer","half"],["year","Year","half"]],blank:{name:"",issuer:"",year:""},label:i=>i.name||"New certificate"},
+languages:{title:"Languages",one:"language",fields:[["name","Language","half",true],["level","Level","half"]],blank:{name:"",level:""},label:i=>i.name||"New language"}
+};
+const LIST_KEYS=["experience","skills","education","projects","certifications","languages"];
+const openMap={personal:true};
+let S;
+let saveTimer;
+const clone=o=>JSON.parse(JSON.stringify(o));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rich=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+const dates=e=>[e.start,e.end].filter(x=>x&&String(x).trim()).join(" – ");
+function el(tag,attrs,...kids){const e=document.createElement(tag);if(attrs)for(const[k,v]of Object.entries(attrs)){if(v===false||v==null)continue;if(k==="class")e.className=v;else if(k.startsWith("on")&&typeof v==="function")e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v)}kids.flat(Infinity).forEach(c=>{if(c==null||c===false)return;e.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(String(c)):c)});return e}
+function setStatus(t){$("status").textContent=t}
+function normalize(d){const out=clone(DEFAULTS);if(!d||typeof d!=="object")return out;out.personal=Object.assign(out.personal,d.personal||{});if(typeof d.summary==="string")out.summary=d.summary;LIST_KEYS.forEach(k=>{if(Array.isArray(d[k]))out[k]=d[k].map(it=>Object.assign(clone(SECTIONS[k].blank),it||{}))});out.experience.forEach(e=>{if(!Array.isArray(e.bullets))e.bullets=String(e.bullets||"").split("\n").map(s=>s.trim()).filter(Boolean)});out.show=Object.assign(out.show,d.show||{});out.style=Object.assign(out.style,d.style||{});const keys=Object.keys(DEFAULTS.show);const ord=Array.isArray(d.order)?d.order.filter(k=>keys.includes(k)):[];keys.forEach(k=>{if(!ord.includes(k))ord.push(k)});out.order=ord;return out}
+function load(){try{const r=localStorage.getItem(STORE);if(r){S=normalize(JSON.parse(r));setStatus("Restored your last session from this browser");return}}catch(e){}S=clone(DEFAULTS)}
+function persist(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(STORE,JSON.stringify(S));setStatus("Autosaved in this browser at "+new Date().toLocaleTimeString())}catch(e){setStatus("Autosave is off in this browser. Use Save data (.json).")}},300)}
+function update(rebuild){if(rebuild)renderEditor();renderPreview();persist()}
+function swap(a,i,j){if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]]}
+function moveSec(i,d){swap(S.order,i,i+d);update(true)}
+function shell(key,title,tools,body){const open=openMap[key]??false;const wrap=el("div",{class:"sec"+(open?" open":"")});const toggle=el("button",{class:"secToggle","aria-expanded":String(open)},el("span",{class:"chev","aria-hidden":"true"},"›"),title);toggle.addEventListener("click",()=>{const o=!wrap.classList.contains("open");wrap.classList.toggle("open",o);toggle.setAttribute("aria-expanded",String(o));openMap[key]=o});wrap.append(el("div",{class:"secHead"},toggle,tools?el("div",{class:"tools"},tools):null),el("div",{class:"body"},body));return wrap}
+function secTools(k,idx){const cb=el("input",{type:"checkbox"});cb.checked=!!S.show[k];cb.addEventListener("change",()=>{S.show[k]=cb.checked;update()});return[el("label",null,cb,"Show"),el("button",{class:"small","aria-label":"Move section up",disabled:idx===0,onclick:()=>moveSec(idx,-1)},"↑"),el("button",{class:"small","aria-label":"Move section down",disabled:idx===S.order.length-1,onclick:()=>moveSec(idx,1)},"↓")]}
+function input(obj,key,label,kind,req,onChange){const isArea=kind==="area"||kind==="bullets";const ctl=isArea?el("textarea",{rows:kind==="bullets"?"7":"3"}):el("input",{type:"text"});ctl.value=kind==="bullets"?(obj[key]||[]).join("\n"):(obj[key]||"");const mark=()=>ctl.classList.toggle("missing",!!req&&!ctl.value.trim());mark();ctl.addEventListener("input",()=>{obj[key]=kind==="bullets"?ctl.value.split("\n").map(s=>s.trim()).filter(Boolean):ctl.value;mark();update();if(onChange)onChange()});return el("label",{class:"field"},el("span",null,label+(req?" (required)":"")),ctl)}
+function fieldsFor(obj,fields,onChange){const out=[];let row=null;fields.forEach(([k,l,kind,req])=>{const n=input(obj,k,l,kind,req,onChange);if(kind==="half"){if(!row){row=el("div",{class:"row"});out.push(row)}row.appendChild(n);if(row.children.length===2)row=null}else{row=null;out.push(n)}});return out}
+function lookSection(){const st=S.style;const color=el("input",{type:"color","aria-label":"Accent colour"});color.value=st.accent;color.addEventListener("input",()=>{st.accent=color.value;update()});const size=el("input",{type:"range",min:"9",max:"12",step:"0.25","aria-label":"Text size"});size.value=st.size;const sv=el("span",null,st.size+" pt");size.addEventListener("input",()=>{st.size=parseFloat(size.value);sv.textContent=st.size+" pt";update()});const font=el("select",{"aria-label":"Font"},Object.keys(FONTS).map(k=>el("option",{value:k},FONT_NAMES[k])));font.value=st.font;font.addEventListener("change",()=>{st.font=font.value;update()});return shell("look","Look",null,[el("div",{class:"style"},el("label",{class:"field"},el("span",null,"Accent colour"),color),el("label",{class:"field"},el("span",null,"Text size"),el("div",{class:"style"},size,sv)),el("label",{class:"field"},el("span",null,"Font"),font)),el("p",{class:"hint"},"Smaller text helps fit two pages. Stay at 10 pt or above so it reads well.")])}
+function personalSection(){return shell("personal","Personal details",null,fieldsFor(S.personal,[["name","Full name","text",true],["title","Headline under your name","text"],["email","Email","half"],["phone","Phone","half"],["location","Location","half"],["linkedin","LinkedIn","half"],["website","Website or GitHub","text"]]))}
+function summarySection(idx){const ta=el("textarea",{rows:"6","aria-label":"Professional summary"});ta.value=S.summary;ta.addEventListener("input",()=>{S.summary=ta.value;update()});return shell("summary",SECTIONS.summary.title,secTools("summary",idx),[el("p",{class:"hint"},"3 to 4 lines. Lead with what you do and your strongest proof."),ta])}
+function listSection(k,idx){const cfg=SECTIONS[k];const list=S[k];const body=[];list.forEach((it,i)=>{const title=el("strong",null,cfg.label(it));const tools=el("div",{class:"tools"},el("button",{class:"small","aria-label":"Move entry up",disabled:i===0,onclick:()=>{swap(list,i,i-1);update(true)}},"↑"),el("button",{class:"small","aria-label":"Move entry down",disabled:i===list.length-1,onclick:()=>{swap(list,i,i+1);update(true)}},"↓"),el("button",{class:"small",onclick:()=>{if(confirm("Remove "+cfg.label(it)+"?")){list.splice(i,1);update(true)}}},"Remove"));body.push(el("div",{class:"item"},el("div",{class:"itemHead"},title,tools),fieldsFor(it,cfg.fields,()=>{title.textContent=cfg.label(it)})))});body.push(el("button",{onclick:()=>{list.push(clone(cfg.blank));openMap[k]=true;update(true)}},"Add "+cfg.one));return shell(k,cfg.title+" ("+list.length+")",secTools(k,idx),body)}
+function tipsSection(){return shell("tips","ATS tips",null,[el("ul",{class:"tips"},TIPS.map(t=>el("li",null,t)))])}
+function renderEditor(){const ed=$("editor");const top=ed.scrollTop;ed.innerHTML="";ed.appendChild(tipsSection());ed.appendChild(lookSection());ed.appendChild(personalSection());S.order.forEach((k,idx)=>ed.appendChild(k==="summary"?summarySection(idx):listSection(k,idx)));ed.scrollTop=top}
+const has=(o,keys)=>keys.some(k=>Array.isArray(o[k])?o[k].length>0:String(o[k]??"").trim()!=="");
+const RENDER={
+summary:()=>S.summary.trim()?`<h3>${SECTIONS.summary.title}</h3><p>${rich(S.summary)}</p>`:"",
+experience:()=>{const L=S.experience.filter(e=>has(e,["company","role","bullets"]));return L.length?`<h3>${SECTIONS.experience.title}</h3>`+L.map(e=>`<div class="ent"><div class="entTop"><span>${esc(e.company)}</span><span>${esc(dates(e))}</span></div><div class="entSub"><span>${esc(e.role)}</span><span>${esc(e.location)}</span></div>${e.intro&&e.intro.trim()?`<p class="intro">${rich(e.intro)}</p>`:""}${e.bullets.length?`<ul>${e.bullets.map(x=>`<li>${rich(x)}</li>`).join("")}</ul>`:""}</div>`).join(""):""},
+skills:()=>{const L=S.skills.filter(x=>has(x,["category","items"]));return L.length?`<h3>${SECTIONS.skills.title}</h3>`+L.map(x=>`<div class="skillRow">${x.category&&x.category.trim()?`<strong>${esc(x.category)}:</strong> `:""}${esc(x.items)}</div>`).join(""):""},
+education:()=>{const L=S.education.filter(e=>has(e,["school","degree"]));return L.length?`<h3>${SECTIONS.education.title}</h3>`+L.map(e=>`<div class="ent"><div class="entTop"><span>${esc(e.school)}</span><span>${esc(dates(e))}</span></div><div class="entSub"><span>${esc([e.degree,e.detail].filter(x=>x&&x.trim()).join(", "))}</span></div></div>`).join(""):""},
+projects:()=>{const L=S.projects.filter(x=>has(x,["name","detail"]));return L.length?`<h3>${SECTIONS.projects.title}</h3>`+L.map(x=>`<div class="proj"><strong>${esc(x.name)}</strong>${x.detail&&x.detail.trim()?`${x.name&&x.name.trim()?": ":""}${rich(x.detail)}`:""}</div>`).join(""):""},
+certifications:()=>{const L=S.certifications.filter(c=>has(c,["name"]));return L.length?`<h3>${SECTIONS.certifications.title}</h3><ul>`+L.map(c=>`<li><strong>${esc(c.name)}</strong>${c.issuer&&c.issuer.trim()?", "+esc(c.issuer):""}${c.year&&String(c.year).trim()?` (${esc(c.year)})`:""}</li>`).join("")+"</ul>":""},
+languages:()=>{const l=S.languages.filter(x=>x.name&&x.name.trim());return l.length?`<h3>${SECTIONS.languages.title}</h3><p>${l.map(x=>esc(x.name)+(x.level&&x.level.trim()?` (${esc(x.level)})`:"")).join(", ")}</p>`:""}
+};
+function renderPreview(){const p=S.personal,st=S.style;$("page").style.setProperty("--cv-accent",st.accent);const cv=$("cv");cv.style.setProperty("--fs",st.size+"pt");cv.style.fontFamily=FONTS[st.font]||FONTS.calibri;const contact=[p.email,p.phone,p.location,p.linkedin,p.website].filter(x=>x&&x.trim()).map(x=>`<span>${esc(x)}</span>`).join("");let h=(p.name&&p.name.trim()?`<h2>${esc(p.name)}</h2>`:`<h2 class="ph">Your name</h2>`)+`${p.title&&p.title.trim()?`<div class="tagline">${esc(p.title)}</div>`:""}<div class="contact">${contact}</div>`;S.order.forEach(k=>{if(S.show[k])h+=RENDER[k]()});cv.innerHTML=h;requestAnimationFrame(layoutPreview)}
+function layoutPreview(){const pane=$("pane"),frame=$("frame"),sc=$("scaler"),page=$("page"),cv=$("cv");page.querySelectorAll(".guide").forEach(g=>g.remove());const mm=page.offsetWidth/210;const per=(297-24)*mm;const h=cv.offsetHeight;const pages=Math.max(1,Math.ceil((h-1)/per));for(let n=1;n<pages;n++)page.appendChild(el("div",{class:"guide",style:`top:${12*mm+n*per}px`},el("span",null,"Page "+(n+1))));const avail=Math.max(200,pane.clientWidth-48);const s=Math.min(1,avail/page.offsetWidth);sc.style.transform=`scale(${s})`;frame.style.width=page.offsetWidth*s+"px";frame.style.height=page.offsetHeight*s+"px";$("pageInfo").textContent=(pages===1?"Fits on 1 page.":`About ${(h/per).toFixed(1)} pages. Dashed lines show where pages break.`)+" To save: click Download PDF + data, choose Save as PDF, and turn off Headers and footers."}
+function fileBase(){return((S.personal.name||"CV").trim().replace(/[^\w\-]+/g,"_")||"CV")+"_CV"}
+function exportJSON(){const data=Object.assign({app:"cv-builder",version:1,savedAt:new Date().toISOString()},S);const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=el("a",{href:URL.createObjectURL(blob),download:fileBase()+".json"});document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);setStatus("Downloaded "+fileBase()+".json. Keep it next to your PDF.")}
+$("openBtn").addEventListener("click",()=>$("fileIn").click());
+$("fileIn").addEventListener("change",async()=>{const f=$("fileIn").files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||typeof d!=="object"||!d.personal)throw new Error("bad");S=normalize(d);update(true);setStatus("Opened "+f.name)}catch(e){alert("This file isn't CV data from this page. Choose the .json file downloaded with your PDF.")}$("fileIn").value=""});
+$("saveBtn").addEventListener("click",exportJSON);
+$("pdfBtn").addEventListener("click",()=>{exportJSON();const old=document.title;document.title=fileBase();const restore=()=>{document.title=old;window.removeEventListener("afterprint",restore)};window.addEventListener("afterprint",restore);setTimeout(()=>window.print(),500)});
+$("resetBtn").addEventListener("click",()=>{if(confirm("Replace everything on screen with the example CV? Save data (.json) first if you want to keep your edits.")){S=clone(DEFAULTS);update(true);setStatus("Example CV loaded")}});
+$("blankBtn").addEventListener("click",()=>{if(confirm("Clear everything and start a blank CV? Save data (.json) first if you want to keep your edits.")){S=clone(BLANK);openMap.personal=true;openMap.experience=true;update(true);setStatus("Blank CV ready. Start with Personal details.")}});
+window.addEventListener("resize",layoutPreview);
+load();renderEditor();renderPreview();
+</script>
+</body>
+</html>
