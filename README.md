@@ -27,7 +27,10 @@ Keep the `.json` file with your PDF. Clearing your browser data removes the auto
 
 1. Click **Start blank**, or edit the example CV.
 2. Fill in each section. Use **Show** to hide a section and the arrows to reorder sections.
-3. Wrap words in `**double stars**` inside a bullet to make them bold.
+3. Wrap words in `**double stars**` inside a bullet, project or education detail to make them bold.
+   - Start a bullet line with `## ` to add a sub-heading under a role (for example, a project name).
+   - In a project name, put the tools after ` | ` (for example `Sales model | Power BI, SQL`); the tools appear in normal weight.
+   - Tick **New page** on a section to start it on a fresh page.
 4. Watch the page indicator. Dashed lines mark where page 2 begins.
 5. Click **Download PDF + data**, choose **Save as PDF**, and turn off **Headers and footers**.
 
@@ -36,6 +39,8 @@ Keep the `.json` file with your PDF. Clearing your browser data removes the auto
 - Live A4 preview with page-break guides
 - Sections for summary, experience, skills, education, projects, certifications and languages
 - Add, remove and reorder entries and sections
+- Sub-headings inside a role, and a **New page** option per section
+- Education details on their own line, with bold support (good for coursework)
 - Accent colour, text size and font options
 - Built-in ATS tips
 - Works offline: download `index.html` and open it in Chrome or Edge
