@@ -111,8 +111,8 @@ body{background:#fff;display:block;height:auto}
 </main>
 <script>
 const STORE="atscvbuilder.v1";
-const FONTS={calibri:'Calibri, Carlito, "Segoe UI", Arial, sans-serif',arial:'Arial, Helvetica, sans-serif',cambria:'Cambria, Caladea, Georgia, serif',georgia:'Georgia, "Times New Roman", serif'};
-const FONT_NAMES={calibri:"Calibri",arial:"Arial",cambria:"Cambria",georgia:"Georgia"};
+const FONTS={arial:'Arial, Helvetica, "Liberation Sans", sans-serif',calibri:'Calibri, Carlito, "Segoe UI", Arial, sans-serif',cambria:'Cambria, Caladea, Georgia, serif',georgia:'Georgia, "Times New Roman", serif'};
+const FONT_NAMES={arial:"Arial (recommended)",calibri:"Calibri",cambria:"Cambria",georgia:"Georgia"};
 const DEFAULTS={
 personal:{name:"Alex Morgan",title:"Data Analyst | Power BI · SQL · Python · Excel",email:"alex.morgan@example.com",phone:"+44 20 7946 0000",location:"London, UK",linkedin:"linkedin.com/in/alex-morgan-example",website:"github.com/alex-morgan-example"},
 summary:"Data analyst with 4 years of experience turning operational and sales data into decisions. Built self-service Power BI reporting for 200+ users, automated weekly reporting with Python, and cut month-end reporting time by 60%. Comfortable owning the full cycle from messy source data to a model leadership trusts.",
@@ -145,7 +145,7 @@ certifications:[
 languages:[{name:"English",level:"Native"},{name:"Spanish",level:"Professional"}],
 show:{summary:true,experience:true,skills:true,education:true,projects:true,certifications:true,languages:true},
 order:["summary","experience","skills","education","projects","certifications","languages"],
-style:{accent:"#0F5E6B",size:10.5,font:"calibri"},
+style:{accent:"#0F5E6B",size:10.5,font:"arial"},
 breaks:{}
 };
 const BLANK={
@@ -159,7 +159,7 @@ certifications:[],
 languages:[],
 show:{summary:true,experience:true,skills:true,education:true,projects:true,certifications:true,languages:true},
 order:["summary","experience","skills","education","projects","certifications","languages"],
-style:{accent:"#0F5E6B",size:10.5,font:"calibri"},
+style:{accent:"#0F5E6B",size:10.5,font:"arial"},
 breaks:{}
 };
 const TIPS=[
@@ -217,7 +217,7 @@ projects:()=>{const L=S.projects.filter(x=>has(x,["name","detail"]));return L.le
 certifications:()=>{const L=S.certifications.filter(c=>has(c,["name"]));return L.length?`<h3>${SECTIONS.certifications.title}</h3><ul>`+L.map(c=>`<li><strong>${esc(c.name)}</strong>${c.issuer&&c.issuer.trim()?", "+esc(c.issuer):""}${c.year&&String(c.year).trim()?` (${esc(c.year)})`:""}</li>`).join("")+"</ul>":""},
 languages:()=>{const l=S.languages.filter(x=>x.name&&x.name.trim());return l.length?`<h3>${SECTIONS.languages.title}</h3><p>${l.map(x=>esc(x.name)+(x.level&&x.level.trim()?` (${esc(x.level)})`:"")).join(", ")}</p>`:""}
 };
-function renderPreview(){const p=S.personal,st=S.style;$("page").style.setProperty("--cv-accent",st.accent);const cv=$("cv");cv.style.setProperty("--fs",st.size+"pt");cv.style.fontFamily=FONTS[st.font]||FONTS.calibri;const contact=[p.email,p.phone,p.location,p.linkedin,p.website].filter(x=>x&&x.trim()).map(x=>`<span>${esc(x)}</span>`).join("");let h=(p.name&&p.name.trim()?`<h2>${esc(p.name)}</h2>`:`<h2 class="ph">Your name</h2>`)+`${p.title&&p.title.trim()?`<div class="tagline">${esc(p.title)}</div>`:""}<div class="contact">${contact}</div>`;S.order.forEach(k=>{if(!S.show[k])return;const part=RENDER[k]();if(part)h+=S.breaks[k]?`<div class="pb">${part}</div>`:part});cv.innerHTML=h;requestAnimationFrame(layoutPreview)}
+function renderPreview(){const p=S.personal,st=S.style;$("page").style.setProperty("--cv-accent",st.accent);const cv=$("cv");cv.style.setProperty("--fs",st.size+"pt");cv.style.fontFamily=FONTS[st.font]||FONTS.arial;const contact=[p.email,p.phone,p.location,p.linkedin,p.website].filter(x=>x&&x.trim()).map(x=>`<span>${esc(x)}</span>`).join("");let h=(p.name&&p.name.trim()?`<h2>${esc(p.name)}</h2>`:`<h2 class="ph">Your name</h2>`)+`${p.title&&p.title.trim()?`<div class="tagline">${esc(p.title)}</div>`:""}<div class="contact">${contact}</div>`;S.order.forEach(k=>{if(!S.show[k])return;const part=RENDER[k]();if(part)h+=S.breaks[k]?`<div class="pb">${part}</div>`:part});cv.innerHTML=h;requestAnimationFrame(layoutPreview)}
 function layoutPreview(){const pane=$("pane"),frame=$("frame"),sc=$("scaler"),page=$("page"),cv=$("cv");page.querySelectorAll(".guide").forEach(g=>g.remove());const mm=page.offsetWidth/210;const per=(297-24)*mm;cv.querySelectorAll(".pb").forEach(b=>{b.style.marginTop="0px";const top=b.offsetTop-cv.offsetTop;const into=top%per;if(top>1&&into>1)b.style.marginTop=(per-into)+"px"});const h=cv.offsetHeight;const pages=Math.max(1,Math.ceil((h-1)/per));for(let n=1;n<pages;n++)page.appendChild(el("div",{class:"guide",style:`top:${12*mm+n*per}px`},el("span",null,"Page "+(n+1))));const avail=Math.max(200,pane.clientWidth-48);const s=Math.min(1,avail/page.offsetWidth);sc.style.transform=`scale(${s})`;frame.style.width=page.offsetWidth*s+"px";frame.style.height=page.offsetHeight*s+"px";$("pageInfo").textContent=(pages===1?"Fits on 1 page.":`About ${(h/per).toFixed(1)} pages. Dashed lines show where pages break.`)+" To save: click Download PDF + data, choose Save as PDF, and turn off Headers and footers."}
 function fileBase(){return((S.personal.name||"CV").trim().replace(/[^\w\-]+/g,"_")||"CV")+"_CV"}
 function exportJSON(){const data=Object.assign({app:"cv-builder",version:1,savedAt:new Date().toISOString()},S);const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=el("a",{href:URL.createObjectURL(blob),download:fileBase()+".json"});document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);setStatus("Downloaded "+fileBase()+".json. Keep it next to your PDF.")}
